@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit Video Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #e94560;
+            font-size: 2.5rem;
+        }
+        .card {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            color: #e94560;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #a0a0a0;
+        }
+        input[type="text"], input[type="url"] {
+            width: 100%;
+            padding: 12px;
+            background: #16213e;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .checkbox-group input {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+        }
+        .row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .col {
+            flex: 1;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: #e94560;
+        }
+        .range-value {
+            text-align: right;
+            color: #e94560;
+            font-weight: bold;
+        }
+        select {
+            width: 100%;
+            padding: 12px;
+            background: #16213e;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #c73e54;
+        }
+        .btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #16213e;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e94560, #ff6b8a);
+            transition: width 0.3s;
+        }
+        .status {
+            text-align: center;
+            margin-top: 10px;
+            color: #a0a0a0;
+        }
+        .download-btn {
+            display: none;
+            margin-top: 15px;
+            padding: 12px;
+            background: #4ecca3;
+            color: #0f0f1a;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+        .download-btn:hover {
+            background: #3db892;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reddit Video Bot</h1>
+        
+        <div class="card">
+            <h2>Reddit Post</h2>
+            <label>Post URL</label>
+            <input type="url" id="url" placeholder="https://reddit.com/r/...">
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="use_random">
+                <label for="use_random">Use random popular post from subreddit</label>
+            </div>
+            
+            <label>Subreddit</label>
+            <input type="text" id="subreddit" value="AskReddit">
+        </div>
+        
+        <div class="card">
+            <h2>Settings</h2>
+            <div class="row">
+                <div class="col">
+                    <label>Number of comments</label>
+                    <input type="range" id="num_comments" min="1" max="10" value="5">
+                    <div class="range-value" id="comments_value">5</div>
+                </div>
+                <div class="col">
+                    <label>Speed</label>
+                    <input type="range" id="speed" min="0.5" max="1.5" step="0.1" value="1.0">
+                    <div class="range-value" id="speed_value">1.0x</div>
+                </div>
+            </div>
+            
+            <label>Voice</label>
+            <select id="voice">
+                <option value="default">Default</option>
+                <option value="us_male">US Male</option>
+                <option value="us_female">US Female</option>
+                <option value="uk_male">UK Male</option>
+                <option value="uk_female">UK Female</option>
+            </select>
+        </div>
+        
+        <div class="card">
+            <h2>Background (Optional)</h2>
+            <label>Background video file path on server</label>
+            <input type="text" id="bg_video" placeholder="/path/to/video.mp4">
+            
+            <label>Background music file path on server</label>
+            <input type="text" id="bg_music" placeholder="/path/to/music.mp3">
+        </div>
+        
+        <button class="btn" id="generateBtn">Generate Video</button>
+        
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="status" id="status">Initializing...</div>
+            <a class="download-btn" id="downloadBtn" download>Download Video</a>
+        </div>
+    </div>
+
+    <script>
+        const urlInput = document.getElementById('url');
+        const useRandomCheckbox = document.getElementById('use_random');
+        const subredditInput = document.getElementById('subreddit');
+        const numCommentsSlider = document.getElementById('num_comments');
+        const commentsValue = document.getElementById('comments_value');
+        const speedSlider = document.getElementById('speed');
+        const speedValue = document.getElementById('speed_value');
+        const voiceSelect = document.getElementById('voice');
+        const bgVideoInput = document.getElementById('bg_video');
+        const bgMusicInput = document.getElementById('bg_music');
+        const generateBtn = document.getElementById('generateBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const statusEl = document.getElementById('status');
+        const downloadBtn = document.getElementById('downloadBtn');
+        
+        let currentJobId = null;
+        let pollInterval = null;
+        
+        numCommentsSlider.addEventListener('input', () => {
+            commentsValue.textContent = numCommentsSlider.value;
+        });
+        
+        speedSlider.addEventListener('input', () => {
+            speedValue.textContent = speedSlider.value + 'x';
+        });
+        
+        useRandomCheckbox.addEventListener('change', () => {
+            urlInput.disabled = useRandomCheckbox.checked;
+            if (useRandomCheckbox.checked) {
+                urlInput.value = '';
+            }
+        });
+        
+        generateBtn.addEventListener('click', async () => {
+            const url = urlInput.value.trim();
+            const use_random = useRandomCheckbox.checked;
+            const subreddit = subredditInput.value.trim() || 'AskReddit';
+            
+            if (!use_random && !url) {
+                alert('Please enter a URL or use random post');
+                return;
+            }
+            
+            generateBtn.disabled = true;
+            progressContainer.style.display = 'block';
+            downloadBtn.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        url,
+                        use_random,
+                        subreddit,
+                        num_comments: parseInt(numCommentsSlider.value),
+                        voice: voiceSelect.value,
+                        speed: parseFloat(speedSlider.value),
+                        background_video: bgVideoInput.value || null,
+                        background_music: bgMusicInput.value || null
+                    })
+                });
+                
+                const data = await response.json();
+                currentJobId = data.job_id;
+                
+                pollInterval = setInterval(checkStatus, 2000);
+            } catch (err) {
+                statusEl.textContent = 'Error: ' + err.message;
+                generateBtn.disabled = false;
+            }
+        });
+        
+        async function checkStatus() {
+            if (!currentJobId) return;
+            
+            try {
+                const response = await fetch(`/api/status/${currentJobId}`);
+                const data = await response.json();
+                
+                progressFill.style.width = (data.progress * 100) + '%';
+                statusEl.textContent = data.message;
+                
+                if (data.status === 'complete') {
+                    clearInterval(pollInterval);
+                    downloadBtn.href = `/api/download/${data.output.split('/').pop()}`;
+                    downloadBtn.style.display = 'block';
+                    generateBtn.disabled = false;
+                } else if (data.status === 'error') {
+                    clearInterval(pollInterval);
+                    generateBtn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>

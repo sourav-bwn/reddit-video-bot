@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "reddit-video-bot"
+version = "1.0.0"
+description = "Creates TikTok/YouTube style videos from Reddit posts with TTS"
+authors = ["User"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+customtkinter = "^5.2.0"
+moviepy = "^1.0.3"
+gtts = "^2.5.0"
+requests = "^2.31.0"
+pillow = "^10.1.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
