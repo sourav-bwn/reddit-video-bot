@@ -22,11 +22,12 @@ class RedditComment:
 
 
 class RedditFetcher:
-    def __init__(self, user_agent: "RedditVideoBot/1.0"):
+    def __init__(self, user_agent: str = "RedditVideoBot/1.0"):
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": user_agent})
 
     def _clean_text(self, text: str) -> str:
+        text = re.sub(r"\[.*?\]\([^)]*\)", "", text)  # markdown links
         text = re.sub(r"\[.*?\]", "", text)
         text = re.sub(r"http\S+", "", text)
         text = re.sub(r"\*+", "", text)

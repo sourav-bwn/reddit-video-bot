@@ -13,6 +13,7 @@ Creates TikTok/YouTube style videos from Reddit posts with TTS narration.
 ## Requirements
 - Python 3.10+
 - ffmpeg (for video encoding)
+- ImageMagick (for the on-screen text rendering via moviepy TextClip)
 
 ## Installation
 
@@ -27,6 +28,25 @@ pip install -r requirements.txt
 
 ```bash
 python app.py
+```
+
+### Web server
+
+A Flask web UI and JSON API are also included (`flask` and `flask-cors` are in
+requirements.txt):
+
+```bash
+python server.py
+# open http://localhost:5000
+```
+
+## Tests
+
+Offline unit tests for the fetcher, TTS naming, video audio assembly and the
+download route. No network, Reddit API keys or video rendering needed:
+
+```bash
+python -m unittest discover -s tests
 ```
 
 ## GUI Options

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import threading
 import os
@@ -119,7 +119,7 @@ def status(job_id):
 
 @app.route("/api/download/<filename>", methods=["GET"])
 def download(filename):
-    return send_file(f"output/{filename}", as_attachment=True)
+    return send_from_directory("output", filename, as_attachment=True)
 
 
 @app.route("/")
