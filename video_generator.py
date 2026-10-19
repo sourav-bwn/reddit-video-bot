@@ -2,7 +2,7 @@ import os
 import textwrap
 from typing import List, Optional
 from pathlib import Path
-import moviepy as mp
+import moviepy.editor as mp
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 
@@ -92,6 +92,7 @@ class VideoGenerator:
     ) -> str:
         total_duration = 0
         clips = []
+        narration_clips = []
 
         for i, (audio_file, text, author) in enumerate(
             zip(audio_files, texts, authors)
@@ -102,24 +103,29 @@ class VideoGenerator:
             overlay = self._create_text_with_author(text, author, dur)
             overlay = overlay.set_start(total_duration)
             clips.append(overlay)
+            narration_clips.append(audio.set_start(total_duration))
 
             total_duration += dur
 
         bg = self._get_background_clip(background_video, total_duration)
         clips.insert(0, bg)
 
+        final = mp.CompositeVideoClip(clips)
+
+        tracks = []
+        if narration_clips:
+            tracks.append(mp.CompositeAudioClip(narration_clips))
         if background_music and Path(background_music).exists():
             music = mp.AudioFileClip(background_music)
             if music.duration < total_duration:
                 music = music.loop(duration=total_duration)
             else:
                 music = music.subclip(0, total_duration)
-            music = music.volumex(0.3)
-
-        final = mp.CompositeVideoClip(clips)
-
-        if background_music and Path(background_music).exists():
-            final = final.set_audio(music)
+            tracks.append(music.volumex(0.3))
+        if tracks:
+            final = final.set_audio(
+                tracks[0] if len(tracks) == 1 else mp.CompositeAudioClip(tracks)
+            )
 
         output_path = self.output_dir / output_filename
         final.write_videofile(
