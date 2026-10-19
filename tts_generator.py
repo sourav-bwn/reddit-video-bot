@@ -1,4 +1,4 @@
-import os
+import hashlib
 from gtts import gTTS
 from typing import List
 from pathlib import Path
@@ -7,8 +7,8 @@ from pathlib import Path
 class TTSGenerator:
     VOICES = {
         "default": "com",
-        "us_male": "us",
-        "us_female": "us",
+        "us_male": "com",
+        "us_female": "com",
         "uk_male": "co.uk",
         "uk_female": "co.uk",
     }
@@ -20,19 +20,12 @@ class TTSGenerator:
     def generate_audio(
         self, text: str, voice: str = "default", speed: float = 1.0
     ) -> str:
-        tld_map = {
-            "default": "com",
-            "us_male": "com",
-            "us_female": "com",
-            "uk_male": "co.uk",
-            "uk_female": "co.uk",
-        }
-
-        tld = tld_map.get(voice, "com")
+        tld = self.VOICES.get(voice, "com")
 
         tts = gTTS(text=text, lang="en", tld=tld, slow=(speed < 0.8))
 
-        output_file = self.output_dir / f"audio_{hash(text)}.mp3"
+        digest = hashlib.md5(text.encode("utf-8")).hexdigest()[:12]
+        output_file = self.output_dir / f"audio_{digest}.mp3"
         tts.save(str(output_file))
 
         return str(output_file)
@@ -43,18 +36,12 @@ class TTSGenerator:
         audio_files = []
         for i, text in enumerate(texts):
             if text.strip():
-                tld_map = {
-                    "default": "com",
-                    "us_male": "com",
-                    "us_female": "com",
-                    "uk_male": "co.uk",
-                    "uk_female": "co.uk",
-                }
-                tld = tld_map.get(voice, "com")
+                tld = self.VOICES.get(voice, "com")
 
                 tts = gTTS(text=text, lang="en", tld=tld, slow=(speed < 0.8))
 
-                output_file = self.output_dir / f"audio_{i}_{hash(text)}.mp3"
+                digest = hashlib.md5(text.encode("utf-8")).hexdigest()[:12]
+                output_file = self.output_dir / f"audio_{i}_{digest}.mp3"
                 tts.save(str(output_file))
                 audio_files.append(str(output_file))
 
