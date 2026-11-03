@@ -164,3 +164,40 @@ class TestDownloadRoute(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class TestGenerateRouteValidation(unittest.TestCase):
+    """Regression: /api/generate must reject non-object JSON with 400, not crash."""
+
+    def test_non_object_json_body_returns_400(self):
+        import server
+
+        client = server.app.test_client()
+        for payload in ("null", "[]", '"text"', "42"):
+            resp = client.post(
+                "/api/generate", data=payload, content_type="application/json"
+            )
+            self.assertEqual(
+                resp.status_code, 400, f"payload {payload!r} should be rejected"
+            )
+            self.assertIn("error", resp.get_json())
+
+
+class TestDependencyPins(unittest.TestCase):
+    """Regression: video_generator imports moviepy.editor, removed in moviepy 2.x."""
+
+    def test_moviepy_is_constrained_below_2(self):
+        requirements = (
+            Path(__file__).resolve().parent.parent / "requirements.txt"
+        ).read_text()
+        specs = [
+            line.strip().replace(" ", "")
+            for line in requirements.splitlines()
+            if line.strip().lower().startswith("moviepy")
+        ]
+        self.assertTrue(specs, "requirements.txt must declare moviepy")
+        for spec in specs:
+            self.assertIn(
+                "<2",
+                spec,
+                "moviepy must stay below 2.x: moviepy.editor was removed in v2",
+            )
