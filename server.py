@@ -21,7 +21,9 @@ os.makedirs("output", exist_ok=True)
 
 @app.route("/api/generate", methods=["POST"])
 def generate():
-    data = request.json
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Request body must be a JSON object"}), 400
 
     url = data.get("url", "")
     subreddit = data.get("subreddit", "AskReddit")
